@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="shortcut icon" href="#"/>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <!--    <script src="/js/layui/layui.js"></script>-->
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<style>
+
+    .gthead th {
+        font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
+        background-color: #e2e2e2;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #e6e6e6;
+    }
+
+    .gthead th, #tbodyId td {
+        height: 28px;
+        line-height: 28px;
+        padding: 0 15px;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+</style>
+<body class="layui-layout-body">
+
+<div>
+    <div class="layui-btn-group" style="float:left;margin-right: 200px;margin-bottom: 20px">
+        <button data-method='addGoods' type="button" class="data-mod layui-btn layui-btn-sm"><i class="layui-icon"></i>
+        </button>
+        <button data-method="editGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
+                class="layui-icon"></i></button>
+        <button data-method="deleteGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
+                class="layui-icon"></i></button>
+    </div>
+    <div style="float:left;">
+        <input id="queryInput" type="text">
+        <button id="queryGoods" type="button" class="layui-btn">查询</button>
+    </div>
+</div>
+<div class="gtable" style="clear: both">
+    <table>
+        <div class="layui-table-header">
+            <thead class="gthead">
+            <tr>
+                <th><input type="checkbox"></th>
+                <th>商品名</th>
+                <th>类别</th>
+                <th>描述</th>
+                <th>库存</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+        </div>
+        <div class="layui-table-body layui-table-main">
+            <tbody id="tbodyId">
+            <tr>
+                <td colspan="7">数据正在加载中...</td>
+            </tr>
+            </tbody>
+        </div>
+    </table>
+</div>
+<div style="position:fixed; bottom:40px;" id="pages"></div>
+
+<script>
+    $(function () {
+        getList(1, 10, null);
+
+        $("#queryGoods").on("click", function () {
+            var query = $("#queryInput").val();
+            var pageNum = $("#pages .layui-input").val();
+            getList(1, 10, query);
+        })
+    })
+
+    //复选框id数组
+    function getChecked() {
+        var checkedArray = $(".gtable input[type='checkbox']:checked");
+        var idArray = [];
+        $(checkedArray).each(function (i, e) {
+            idArray[i] = $(this).parents("tr").attr("id");
+        })
+        return idArray;
+    }
+
+    //分页列表
+    function getList(pageNum, pageRecord, query) {
+        var data = {pageNum: pageNum, pageRecord: pageRecord, query: query};
+        $.get("goods/findAll", data, function (result) {
+            if(result.state=="200") {
+                var r=result.data;
+                $("#tbodyId").html("");
+                var tr;
+                var td;
+                for (var i in r) {
+                    var date = r[i].createtime.substring(0, 19);
+                    date = date.replace("T", " ");
+                    tr = $("<tr></tr>")
+                    td = "<td><input type='checkbox'></td>" + "<td>" + r[i].name + "</td><td>" + r[i].catName + "</td>" +
+                        "<td>" + r[i].descript + "</td><td>" +
+                        "<button data-method='substract' type='button' class='substract data-mod layui-btn layui-btn-primary layui-btn-sm'>" +
+                        "-</button><span style='display:inline-block;width:20px;margin-left: 10px;margin-right: 10px;'>"
+                        + r[i].stock + "</span><button data-method='add' type='button' class='data-mod add layui-btn layui-btn-primary layui-btn-sm'>" +
+                        "+</button></td><td>" + date + "</td>" +
+                        "<td><button data-method='offset' type='button' class='data-mod layui-btn layui-btn-primary layui-btn-xs detail'>详情</button></td>"
+                    tr.append(td);
+                    $("#tbodyId").append(tr);
+                    $(tr).attr("id", r[i].id);
+                }
+                //分页
+                var pageCount;
+                var data = {"query": query}
+                $.get("/goods/queryCountGoods", data, function (result) {
+                    if(result.state=="200") {
+                        var r=result.data
+                        pageCount = r;
+                        var pageNum = $("#pages .layui-input").val()
+                        pageLimit(pageCount, pageNum);
+                    }
+                })
+                //弹出层
+                popus();
+            }
+
+        })
+    }
+
+    //layui弹出层
+    function popus() {
+        layui.use('layer', function () { //独立版的layer无需执行这一句
+            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+            //触发事件
+            var active = {
+                deleteGoods: function () {
+                    var ids = getChecked();
+                    if (ids.length == 0) {
+                        layer.msg("请选择一条记录")
+                    } else {
+                        layer.confirm("确认删除" + ids.length + "条记录？", {
+                            btn: ['确认', '取消'] //按钮
+                        }, function () {
+                            var url = "goods/deleteGoods";
+                            var data = {"ids": ids.toString()};
+                            $.get(url, data, function (r) {
+                                if(r.state=='200') {
+                                    layer.msg(r.message);
+                                    var pageNum = $("#pages .layui-input").val();
+                                    var query = $("#queryInput").val();
+                                    getList(pageNum, 10, query);
+                                }
+                            })
+
+                        });
+                    }
+                }
+                , substract: function () {
+                    layer.open({
+                        type: 2,
+                        title: ['减少库存', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['400px', '90%'],
+                        skin: 'yourclass',
+                        content: ['/detail/substractpage', 'no'],
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#id").val($("#mainContent").attr("aid")); // #detailId? 子页面元素id
+                        },
+                        end: function () {
+                            var pageNum = $("#pages .layui-input").val();
+                            var query=$("#queryInput").val();
+                            getList(pageNum, 10, query);
+                        }
+
+                    });
+                }
+                , add: function () {
+                    layer.open({
+                        type: 2,
+                        title: ['增加库存', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['400px', '90%'],
+                        skin: 'yourclass',
+                        content: '/detail/addpage',
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#id").val($("#mainContent").attr("aid")); // #detailId? 子页面元素id
+                        },
+                        end: function () {
+                            var pageNum = $("#pages .layui-input").val();
+                            var query=$("#queryInput").val();
+                            getList(pageNum, 10, query);
+                        }
+                    });
+                }
+                , addGoods: function () {
+                    layer.open({
+                        type: 2,
+                        title: ['添加商品', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['600px', '90%'],
+                        skin: 'yourclass',
+                        content: ['/goods/addgoodspage', 'no'],
+                        end: function () {
+                            var pageNum = $("#pages .layui-input").val();
+                            var query=$("#queryInput").val();
+                            getList(pageNum, 10, query);
+                        }
+                    });
+                }
+                , editGoods: function (othis) {
+                    layer.open({
+                        type: 2,
+                        title: ['编辑商品', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['600px', '90%'],
+                        skin: 'yourclass',
+                        content: ['/goods/addgoodspage', 'no'],
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#gid").val(getChecked()); // #detailId? 子页面元素id
+
+                        },
+                        end: function () {
+                            var pageNum = $("#pages .layui-input").val();
+                            var query=$("#queryInput").val();
+                            getList(pageNum, 10, query);
+                        }
+                    });
+                }
+
+                , offset: function (othis) {
+                    layer.open({
+                        type: 2,
+                        title: ['出入库详情', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['600px', '90%'],
+                        skin: 'yourclass',
+                        content: '/detail/detailpage',
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#gid").val($("#mainContent").attr("aid")); // #detailId? 子页面元素id
+
+                        },
+                        end: function () {
+                            var pageNum = $("#pages .layui-input").val();
+                            var query=$("#queryInput").val();
+                            getList(pageNum, 10, query);
+                        }
+                    });
+                }
+            };
+            $('.data-mod').unbind('click').on('click', function () {
+                var othis = $(this), method = othis.data('method');
+                if (method == "substract" || method == "add" || method == "offset") {
+                    var tr = $(this).parent().parents(tr);
+                    if (tr) {
+                        if ($("#mainContent").attr("aid")) {
+                            $("#mainContent").removeAttr("aid");
+                        }
+                        $("#mainContent").attr("aid", $(tr).attr("id"));
+                    }
+                }
+
+                //编辑按钮只选择一条编辑
+                if (method == "editGoods") {
+                    if (getChecked().length != 1) {
+                        alert("请勾选一条记录")
+                        method = "";
+                    }
+                }
+                active[method] ? active[method].call(this, othis) : '';
+            });
+        });
+    }
+
+
+    function pageLimit(pageCount,pageNum) {
+        layui.use(['laypage', 'layer'], function () {
+            var laypage = layui.laypage
+                , layer = layui.layer;
+            //分页设置
+            laypage.render({
+                elem: 'pages'
+                , count: pageCount
+                ,curr: pageNum
+                , layout: ['count', 'prev', 'page', 'next', 'skip']
+                , jump: function (obj, first) {
+                    var pageNum = obj.curr; //得到当前页，以便向服务端请求对应页的数据。
+                    var pageRecord = obj.limit; //得到每页显示的条数
+                    //首次不执行
+                    if (!first) {
+                        //do something
+                        var query = $("#queryInput").val();
+                        getList(pageNum, pageRecord, query);
+                    }
+                }
+            });
+        })
+    }
+</script>
+
+<script>
+
+
+</script>
+</body>
+</html>

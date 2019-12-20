@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oupu.pss.dao.GoodsMapper">
+
+    <resultMap id="goodsMap" type="com.oupu.pss.vo.GoodsVO">
+        <association property="catName" column="cat" select="com.oupu.pss.dao.CategoryMapper.findCatById">
+        </association>
+    </resultMap>
+
+<!--    根据cat查询是否存在商品-->
+    <select id="findCatByCatId" resultType="int">
+        select count(id) from goods where cat=#{id}
+    </select>
+<!--    根据id查询商品名-->
+    <select id="findGoodsByGoodsId" resultType="String">
+        select name from goods where id=#{goods_id} and is_delete=0
+    </select>
+<!--  查询商品  -->
+    <select id="findGoodsById" resultMap="goodsMap">
+        select id,name,cat,stock,descript,createtime from goods where id=#{id} and is_delete=0
+    </select>
+
+    <select id="queryCountGoods" resultType="int">
+        select count(id) from goods where  is_delete=0
+        <if test="query!=null and query!=''">
+             and   name like "%${query}%"
+        </if>
+    </select>
+
+    <select id="queryStock" resultType="int">
+        select stock from goods where id=#{id}
+    </select>
+
+    <select id="findAll" resultMap="goodsMap">
+        SELECT id,name,cat,stock,descript,createtime FROM goods
+        where is_delete=0
+        <if test="query!=null and query!=''" >
+             and name like "%${query}%"
+        </if>
+        order by createtime desc
+        limit #{pageNum},#{pageRecord}
+    </select>
+
+    <select id="queryGoods" resultType="com.oupu.pss.entity.Goods">
+        SELECT id,name,cat,stock,descript,createtime FROM goods where name like "%#{query}%"
+    </select>
+
+<!--  添加更改删除商品  -->
+    <update id="deleteGoods">
+        update goods set is_delete=1
+        <where>
+        <foreach collection="array" item="id">
+            or id=#{id}
+        </foreach>
+        </where>
+    </update>
+
+    <insert id="addGoods" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into goods (name,cat,stock,descript,createtime)
+         values (#{name},#{cat},#{stock},#{descript},now())
+    </insert>
+
+    <update id="updateGoods">
+        update goods set name = #{name},cat=#{cat},descript=#{descript} where id=#{id}
+    </update>
+<!--  增减库存  -->
+    <update id="addStock">
+        update goods set stock=stock+#{num} where id=#{id}
+    </update>
+
+    <update id="subtractStock">
+        update goods set stock=stock-#{num} where id=#{id}
+    </update>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oupu.pss.dao.DetailMapper">
+    <resultMap id="detailMap" type="com.oupu.pss.vo.DetailVO">
+        <association property="goodsName" column="goods_id"
+                     select="com.oupu.pss.dao.GoodsMapper.findGoodsByGoodsId">
+        </association>
+        <association property="goodsStock" column="goods_id"
+                     select="com.oupu.pss.dao.GoodsMapper.queryStock">
+        </association>
+    </resultMap>
+
+    <select id="countDetailsByGoodsId" resultType="int">
+        select count(id) from detail where goods_id=#{goods_id}
+    </select>
+
+    <select id="findDetailByGoodsId" resultMap="detailMap">
+        SELECT id,num,option,descript,createtime,goods_id,residue FROM detail where goods_id=
+        #{goods_id} order by createtime desc  limit #{pageNum},#{pageRecord}
+    </select>
+
+    <select id="findDetails" resultType="com.oupu.pss.entity.Detail">
+        SELECT id,num,option,descript,createtime,goods_id FROM detail
+    </select>
+
+    <insert id="addDeatil">
+        insert into detail (num,option,descript,createtime,goods_id,residue)
+         values (#{num},#{option},#{descript},now(),#{goods_id},#{residue})
+    </insert>
+</mapper>

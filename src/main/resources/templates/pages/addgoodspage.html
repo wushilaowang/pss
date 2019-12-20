@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <script src="/js/layui/layui.js"></script>
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <input type="hidden" id="gid">
+    <form method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label">商品名</label>
+            <div class="layui-input-inline">
+                <input type="text" name="name" lay-verify="required" placeholder="请输入" autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">库存</label>
+            <div class="layui-input-inline">
+                <input type="text" name="stock" lay-verify="required" placeholder="请输入" autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类别</label>
+            <div class="layui-input-inline">
+                <input data-method='cat' type="text" name="cat" lay-verify="required" placeholder="请输入"
+                       autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">详情描述</label>
+            <div class="layui-input-block">
+                <textarea id="descript" name="descript" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div><button type="button" class="layui-btn" id="submit">提交</button></div>
+    </form>
+</div>
+
+<!--<script src="//res.layui.com/layui/src/layui.js?t=1568076536616" charset="utf-8"></script>-->
+<script>
+    $(function () {
+        setTimeout("submit()", 1);
+        setTimeout("getInputVal()",1);
+
+
+    })
+
+    function getInputVal() {
+        if ($("#gid").val()) {
+            $("input[name='stock']").attr("readonly","readonly")
+            var url = "/goods/findGoodsById";
+            var data = {id: $("#gid").val()}
+            $.get(url, data, function (result) {
+                if(result.state==200) {
+                    var r=result.data
+                    $("input[name='name']").val(r.name);
+                    $("input[name='stock']").val(r.stock);
+                    $("input[name='cat']").attr("cat", r.cat);
+                    $("input[name='cat']").val(r.catName);
+                    $("#descript").val(r.descript)
+                }
+            })
+        }
+    }
+
+    function submit() {
+        $("#submit").unbind().on("click", function () {
+            var inputNmae=$("input[name='name']").val().trim().replace(/\s/g,"");
+            var inputStock=$("input[name='stock']").val().trim().replace(/\s/g,"");
+            var inputCatName=$("input[name='cat']").val().trim().replace(/\s/g,"");
+            var inputDescript=$("#descript").val().trim().replace(/\s/g,"");
+            if(inputNmae!=""&&inputStock!=""&&inputCatName!=""&&inputDescript!="") {
+                if (!$("#gid").val()) {
+                    var url = "/goods/addGoods";
+                    var data = {
+                        name: $("input[name='name']").val(),
+                        stock: $("input[name='stock']").val(),
+                        cat: $("input[name='cat']").attr("cat"),
+                        descript: $("#descript").val()
+                    }
+                } else {
+                    var url = "/goods/updateGoods";
+                    var data = {
+                        id: $("#gid").val(),
+                        name: $("input[name='name']").val(),
+                        stock: $("input[name='stock']").val(),
+                        cat: $("input[name='cat']").attr("cat"),
+                        descript: $("#descript").val()
+                    }
+                }
+                $.post(url, data, function (r) {
+                    alert(r.message)
+                })
+            }else {
+                layer.msg("请输入完整信息")
+            }
+        })
+
+        layui.use('form', function(){
+            var form = layui.form;
+
+            //各种基于事件的操作，下面会有进一步介绍
+            form.on('submit(*)', function(data){
+                return false;
+            })
+        });
+        layui.use('layer', function () { //独立版的layer无需执行这一句
+            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+            //触发事件
+            var active = {
+                cat: function () {
+                    layer.open({
+                        type: 2,
+                        title: ['选择类目', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['400px', '90%'],
+                        skin: 'yourclass',
+                        content: '/goods/catchoosepage',
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#id").val($("#mainContent").attr("aid"));  // #detailId  子页面元素id
+                        }
+                    });
+                }
+            };
+            $("input[name='cat']").unbind('click').on('click', function () {
+                var othis = $(this), method = othis.data('method');
+                active[method] ? active[method].call(this, othis) : '';
+            });
+        });
+    }
+
+</script>
+
+</body>
+</html>

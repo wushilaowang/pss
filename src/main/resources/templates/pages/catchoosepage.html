@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <script src="/js/layui/layui.js"></script>
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<body class="layui-layout-body">
+
+<div id="catTree" class="demo-tree"></div>
+
+<button type="button" class="confirm layui-btn">确定</button>
+</div>
+<!--<script src="//res.layui.com/layui/src/layui.js?t=1568076536616" charset="utf-8"></script>-->
+<script>
+    $(function () {
+        getCatData();
+
+    })
+
+    function getCatData() {
+        var url = "/Category/findAllCat";
+        var data;
+        $.ajax({
+            url: url,    //请求的url地址
+            dataType: "json",   //返回格式为json
+            async: true,//请求是否异步，默认为异步，这也是ajax重要特性
+            type: "get",   //请求方式
+            success: function (r) {
+                layuiTree(r.data)
+            }
+        })
+    }
+
+    function layuiTree(data) {
+        layui.use('tree', function () {
+            var tree = layui.tree;
+            //渲染
+            var inst1 = tree.render({
+                elem: '#catTree'  //绑定元素
+                , showCheckbox: true //开启复选框
+                , data: data
+                , id: 'domeId'
+            });
+
+
+            $(".confirm").on("click", function () {
+                var checkData = tree.getChecked('domeId');//获取选中id
+                if (checkData.length == 1) {
+                    var endBox = getEndBox(checkData);
+                    parent.$("input[name='cat']").val(endBox[0].title);
+                    parent.$("input[name='cat']").attr("cat", endBox[0].id);
+                    if (endBox == "请勿选择多项") {
+                        alert(endBox);
+                    }
+                } else {
+                    alert("请选择一个类目")
+                }
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(index);
+            })
+        });
+
+    }
+
+    //取得末端节点
+    function getEndBox(checkData) {
+        var children = checkData[0].children;
+        if (children) {
+            if (children.length != 1) {
+                return "请勿选择多项"
+            }
+            return getEndBox(children);
+        } else {
+            return checkData;
+        }
+    }
+</script>
+
+</body>
+</html>

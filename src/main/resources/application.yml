@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    name: test  #数据库名
+    url: jdbc:mysql://localhost:3306/purchase-sell-stock?serverTimezone=UTC #url
+    username: root  #用户名
+    password: root  #密码
+    driver-class-name: com.mysql.jdbc.Driver  #数据库链接驱动
+  thymeleaf:
+    prefix: classpath:/templates/pages/
+    suffix: .html
+
+#mybatis
+mybatis:
+  configuration:
+    default-statement-timeout: 30
+    map-underscore-to-camel-case: false
+  mapper-locations:
+    - classpath:/mapper/*.xml
+
+logging:
+  level:
+    com.oupu.pss.dao: debug

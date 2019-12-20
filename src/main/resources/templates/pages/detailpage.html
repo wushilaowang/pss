@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <script src="/js/layui/layui.js"></script>
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<style>
+    .gthead th {
+        font: 14px Helvetica Neue, Helvetica, PingFang SC, Tahoma, Arial, sans-serif;
+        background-color: #e2e2e2;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #e6e6e6;
+    }
+
+    .gthead th, #tbodyId td {
+        height: 28px;
+        line-height: 28px;
+        padding: 0 15px;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+</style>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <input type="hidden" id="gid">
+    <div class="gtable">
+        <table class="">
+            <div class="layui-table-header">
+                <thead class="gthead">
+                <tr>
+
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>操作</th>
+                    <th>描述</th>
+                    <th>剩余库存</th>
+                    <th>时间</th>
+                </tr>
+                </thead>
+            </div>
+            <div class="layui-table-body layui-table-main">
+                <tbody id="tbodyId">
+                <tr>
+                    <td colspan="7">数据正在加载中...</td>
+                </tr>
+                </tbody>
+            </div>
+        </table>
+    </div>
+    <div style="position:fixed; bottom:40px;" id="pages"></div>
+</div>
+<!--<script src="//res.layui.com/layui/src/layui.js?t=1568076536616" charset="utf-8"></script>-->
+<script>
+    $(function () {
+        setTimeout("loadDetailList(1,10)", 1);
+
+    })
+
+    function loadDetailList(pageNum,pageRecord) {
+        var url = "/detail/findDetailByGoodsId";
+        var data = {goods_id: $("#gid").val(),pageNum: pageNum,pageRecord:pageRecord};
+        $.get(url, data, function (result) {
+            if (result.state = '200') {
+                var r = result.data
+                $("#tbodyId").empty();
+                var tr;
+                var td;
+                for (var i in r) {
+                    var date = r[i].createtime.substring(0, 19);
+                    date = date.replace("T", " ");
+                    tr = $("<tr></tr>")
+                    var option = r[i].option == 1 ? '出库' : '入库';
+                    td = "<td>" + r[i].goodsName + "</td><td>" + r[i].num + "</td>" +
+                        "<td>" + option + "</td><td>" + r[i].descript + "</td>" +
+                        "<td>" + r[i].residue + "</td><td>" + date + "</td>"
+                    tr.append(td);
+                    $("#tbodyId").append(tr);
+                }
+            }
+
+            var param = {goods_id: $("#gid").val()}
+            $.get("/detail/countDetailsByGoodsId",param, function (r) {
+                if (r.state == "200") {
+                    var pageCount = r.data;
+                    pageLimit(pageCount, pageNum)
+                }
+            })
+        })
+    }
+
+
+    function pageLimit(pageCount, pageNum) {//总页数,当前页号
+        layui.use(['laypage', 'layer'], function () {
+            var laypage = layui.laypage
+                , layer = layui.layer;
+            //分页设置
+            laypage.render({
+                elem: 'pages'
+                , count: pageCount
+                , curr: pageNum
+                , layout: ['count', 'prev', 'page', 'next', 'skip']
+                , jump: function (obj, first) {
+                    var pageNum = obj.curr; //得到当前页，以便向服务端请求对应页的数据。
+                    var pageRecord = obj.limit; //得到每页显示的条数
+                    //首次不执行
+                    if (!first) {
+                        //do something
+                        loadDetailList(pageNum, pageRecord);
+                    }
+                }
+            });
+        })
+    }
+</script>
+
+</body>
+</html>
