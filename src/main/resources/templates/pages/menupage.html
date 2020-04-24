@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+<!--    <script src="/js/layui/layui.js"></script>-->
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <input type="hidden" id="id">
+    <div class="layui-btn-group">
+        <button type="button" id="addMenu" class="data-mod layui-btn layui-btn-sm"><i class="layui-icon"></i>
+        </button>
+    </div>
+    <div id="menuTree" class="demo-tree"></div>
+
+</div>
+</div>
+
+<script>
+    $(function () {
+        setTimeout("getMenuData()",20);
+    })
+
+
+    //树数据源
+    function getMenuData() {
+        var a=$("#id").val();
+        var url = "/menu/findAllMenu";
+        $.ajax({
+            url: url,    //请求的url地址
+            dataType: "json",   //返回格式为json
+            async: true,//请求是否异步，默认为异步，这也是ajax重要特性
+            type: "get",   //请求方式
+            success: function (r) {
+                layuiTree(r.data)
+            }
+        });
+    }
+
+
+    //树
+    function layuiTree(data) {
+        layui.use(['layer', 'tree'], function () {
+            var tree = layui.tree;
+            var $ = layui.jquery, layer = layui.layer;
+
+            //渲染
+            var inst1 = tree.render({
+                elem: '#menuTree'  //绑定元素
+                , showCheckbox: true //开启复选框
+                , data: data
+                ,edit: ['add', 'del']
+                , id: 'domeId'
+                ,click: function(obj) {
+                    var data = obj.data;
+                    layer.open({
+                        type: 2,
+                        title: ['编辑菜单', 'font-size:18px;'],
+                        closeBtn: 1,
+                        shadeClose: true,
+                        area: ['400px', '50%'],
+                        skin: 'yourclass',
+                        content: '/menu/addMenuPage',
+                        success: function (layero, index) {
+                            var body = layer.getChildFrame('body', index);
+                            body.contents().find("#id").val(data.id); // #detailId? 子页面元素id
+                            body.contents().find("#operate").val("editMenu");
+                        },
+                        end: function () {
+                            getMenuData()
+                        }
+                    });
+                }
+                , operate: function (obj) {
+                    var type = obj.type; //得到操作类型：add、edit、del
+                    var data = obj.data; //得到当前节点的数据
+                    var elem = obj.elem; //得到当前节点元素
+                    //Ajax 操作
+                    var id = data.id; //得到节点索引
+                    if (type === 'add') { //增加节点
+                        $("#menuTree").attr("catInfo", data.id);
+                        layer.open({
+                            type: 2,
+                            title: ['添加菜单', 'font-size:18px;'],
+                            closeBtn: 1,
+                            shadeClose: true,
+                            area: ['400px', '50%'],
+                            skin: 'yourclass',
+                            content: '/menu/addMenuPage',
+                            success: function (layero, index) {
+                                var body = layer.getChildFrame('body', index);
+                                body.contents().find("#id").val(data.id); // #detailId? 子页面元素id
+                                body.contents().find("#operate").val("addLevelOthers");
+                            },
+                            end: function () {
+                                getMenuData()
+                            }
+                        });
+                    } else if (type === 'del') { //删除节点
+                        var para = {id: data.id};
+                        var url = "/menu/deleteMenu";
+                        $.get(url, para, function (r) {
+                            if(r.state=='200') {
+                                layer.msg(r.message);
+                                getMenuData();
+                            }
+                        })
+                    }
+                    ;
+                }
+            });
+
+
+            //添加一级菜单
+            $("#addMenu").on("click", function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加一级菜单', 'font-size:18px;'],
+                    closeBtn: 1,
+                    shadeClose: true,
+                    area: ['400px', '50%'],
+                    skin: 'yourclass',
+                    content: '/menu/addMenuPage',
+                    success: function (layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        body.contents().find("#id").val(data.id); // #detailId? 子页面元素id
+                        body.contents().find("#operate").val("addLevelOne");
+                    },
+                    end: function () {
+                        getMenuData()
+                    }
+                });
+            })
+
+
+            //更改菜单提交
+            // $("#submit").on("click", function () {
+            //     var url = "/role/updateMenuByRoleId";
+            //     var checkedArr=tree.getChecked('domeId');
+            //     var menuId=[];
+            //     $(checkedArr).each(function (i,e) {
+            //         memuId = getEndBox(checkedArr[i],menuId);
+            //     })
+            //     var data = {roleId: $("#id").val(), menuIds: menuId.toString()};
+            //     $.get(url, data, function (r) {
+            //         if(r.state == "200"){
+            //             layer.msg(r.message);
+            //         }
+            //     })
+            // })
+
+        });
+    }
+
+
+    //取得末端节点
+    // function getEndBox(checkArr,menuId) {
+    //     $(checkArr).each(function (key,value) {
+    //         if(value.children){
+    //             return getEndBox(value.children,menuId);
+    //         }else{
+    //             return menuId.push(value.id);
+    //         }
+    //     })
+    // }
+</script>
+
+</body>
+</html>

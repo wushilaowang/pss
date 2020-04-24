@@ -1,10 +1,16 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    max-threads: 1000
 spring:
   datasource:
     name: test  #数据库名
-    url: jdbc:mysql://localhost:3306/purchase-sell-stock?serverTimezone=UTC #url
+    url: jdbc:mysql://39.97.214.57:3306/purchase-sell-stock?serverTimezone=GMT%2b8 #url
     username: root  #用户名
-    password: root  #密码
-    driver-class-name: com.mysql.jdbc.Driver  #数据库链接驱动
+    password: 123456  #密码
+    driver-class-name: com.mysql.cj.jdbc.Driver  #数据库链接驱动
   thymeleaf:
     prefix: classpath:/templates/pages/
     suffix: .html
@@ -14,9 +20,11 @@ mybatis:
   configuration:
     default-statement-timeout: 30
     map-underscore-to-camel-case: false
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  #控制台sql打印
   mapper-locations:
     - classpath:/mapper/*.xml
 
-logging:
-  level:
-    com.oupu.pss.dao: debug
+#控制台打印mybatis sql
+#logging:
+ # level:
+  #  com.oupu.pss.dao: debug

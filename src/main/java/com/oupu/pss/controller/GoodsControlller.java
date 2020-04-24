@@ -27,10 +27,7 @@ import java.util.List;
 public class GoodsControlller {
     @Autowired
     private GoodsService goodsService;
-    @RequestMapping("/index")
-    public String index(){
-        return "index2";
-    }
+
 
     @RequestMapping("/goods/page")
     public String goodsPage(){

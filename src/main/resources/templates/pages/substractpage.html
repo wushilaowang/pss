@@ -53,12 +53,10 @@
                     data: {id: $("#id").val(), option: 1, num: $("#num").val(), descript: $("#descript").val()},
                     dataType: 'json',
                     success: function (r) {
-                        debugger
                         if (r.state == '200') {
                             layui.use('layer', function () { //独立版的layer无需执行这一句
                                 var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
                                 layer.msg(r.message)
-                                debugger
                             })
                         }
                     }

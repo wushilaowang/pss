@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -26,17 +27,18 @@
         box-sizing: border-box;
     }
 
+
 </style>
 <body class="layui-layout-body">
 
 <div>
     <div class="layui-btn-group" style="float:left;margin-right: 200px;margin-bottom: 20px">
-        <button data-method='addGoods' type="button" class="data-mod layui-btn layui-btn-sm"><i class="layui-icon"></i>
-        </button>
-        <button data-method="editGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
-                class="layui-icon"></i></button>
-        <button data-method="deleteGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
-                class="layui-icon"></i></button>
+        <shiro:hasPermission name="添加商品"><button data-method='addGoods'type="button" class="data-mod layui-btn layui-btn-sm"><i class="layui-icon"></i>
+        </button></shiro:hasPermission>
+        <shiro:hasPermission name="编辑商品"><button data-method="editGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
+                class="layui-icon"></i></button></shiro:hasPermission>
+        <shiro:hasPermission name="删除商品"><button data-method="deleteGoods" type="button" class="data-mod layui-btn layui-btn-sm"><i
+                class="layui-icon"></i></button></shiro:hasPermission>
     </div>
     <div style="float:left;">
         <input id="queryInput" type="text">

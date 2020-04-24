@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <script src="/js/layui/layui.js"></script>
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <input type="hidden" id="id">
+    <div id="test7" class="demo-transfer"></div>
+    <div><input type="button" id="submit" value="提交"></div>
+</div>
+
+
+<script>
+    $(function () {
+        setTimeout("getRole()",1);
+    })
+
+
+    //获取角色穿梭框
+    function getRole() {
+        layui.use(['transfer', 'layer', 'util'], function () {
+            var $ = layui.$
+                , transfer = layui.transfer
+                , layer = layui.layer
+                , util = layui.util;
+            //右侧框数据
+            var roleArray;
+            var data={userId:$("#id").val()}
+            $.get("/role/findRoleByUserId",data,function (r) {
+                if(r.state=="200"){
+                    roleArray=r.data
+                }
+            })
+            //左侧框
+            $.get("/role/findRoleWithoutConditon", function (r) {
+                if (r.state == "200") {
+                    //实例调用
+                    transfer.render({
+                        elem: '#test7'
+                        , data: r.data
+                        , parseData: function (res) {
+                            return {
+                                "value": res.id //数据值
+                                , "title": res.role_name //数据标题
+                            }
+                        }
+                        ,value:roleArray
+                        , id: 'leftRole' //定义唯一索引
+                    })
+
+                    $("#submit").on("click",function () {
+                        var data=transfer.getData('leftRole');
+                        var arr=[];
+                        debugger
+                        $(data).each(function (i,e) {
+                            arr[i]=data[i].value;
+                        })
+                        var para={userId:$("#id").val(),roleIds:arr.toString()}
+                        $.get("/role/updateUserRole",para,function (r) {
+                            debugger
+                            if(r.state=="200"){
+                                layer.msg(r.message);
+                            }
+                        })
+                    })
+                }
+            })
+
+
+
+            //批量办法定事件
+            util.event('lay-demoTransferActive', {
+                getData: function (othis) {
+                    var getData = transfer.getData('key123'); //获取右侧数据
+                    layer.alert(JSON.stringify(getData));
+                }
+                , reload: function () {
+                    //实例重载
+                    transfer.reload('key123', {
+                        title: ['文人', '喜欢的文人']
+                        , value: ['2', '5', '9']
+                        , showSearch: true
+                    })
+                }
+            });
+
+        });
+    }
+</script>
+</body>
+</html>

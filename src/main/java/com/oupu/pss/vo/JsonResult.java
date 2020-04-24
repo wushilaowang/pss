@@ -92,6 +92,7 @@ public class JsonResult implements Serializable {
 
     //返回异常
     public JsonResult(Throwable t){
+        t.printStackTrace();
         this.message=t.getMessage();
     }
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oupu.pss.dao.UserMapper">
+
+
+    <select id="findAllUser" resultType="com.oupu.pss.entity.User">
+        select id,account,email,valid,DATE_FORMAT(createTime ,"%Y-%m-%d %H:%i:%s") as createtime from user
+        <if test="query != null and query != ''">
+            where account like "%${query}%"
+        </if>
+        order by createtime desc
+        limit #{pageNum},#{pageRecord}
+    </select>
+
+    <select id="queryEmailByEmail" resultType="int">
+        select count(email) from user where email=#{email}
+    </select>
+
+    <select id="queryAccountByAccount" resultType="int">
+        select count(id) from user where account=#{account}
+    </select>
+
+    <insert id="addUser">
+        insert into user (account,password,salt,email,valid,createtime) values
+        (#{account},#{password},#{salt},#{email},1,now())
+    </insert>
+    
+    <select id="selectUserByAccount" resultType="com.oupu.pss.entity.User">
+        select id,account,password,salt,valid from user where account=#{account}
+    </select>
+
+    <update id="updateValid">
+        update user set valid=#{valid} where id=#{id}
+    </update>
+</mapper>

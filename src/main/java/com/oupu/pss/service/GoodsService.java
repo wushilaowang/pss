@@ -15,9 +15,9 @@ import java.util.List;
  */
 public interface GoodsService {
     public int queryCountGoods(String Goods);
-    public List<Goods> findAll(Integer pageNum,Integer pageRecord,String query);
-    public int addStock(int num,int id,String descript,short option);
-    public int subtractStock(int num,int id,String descript,short option);
+    public List<Goods> findAll(Integer pageNum, Integer pageRecord, String query);
+    public int addStock(int num, int id, String descript, short option);
+    public int subtractStock(int num, int id, String descript, short option);
     public List<Goods> queryGoods(String query);
     public int addGoods(Goods goods);
     public int updateGoods(Goods goods);

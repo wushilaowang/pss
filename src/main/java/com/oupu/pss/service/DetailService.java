@@ -14,7 +14,7 @@ import java.util.List;
  * @Author:
  */
 public interface DetailService {
-    public List<DetailVO> findDetailByGoodsId(Integer goods_id,int pageNum,int pageRecord);
+    public List<DetailVO> findDetailByGoodsId(Integer goods_id, int pageNum, int pageRecord);
     public int addDetail(Detail detail);
     public List<Detail> findDetails();
     public int countDetailsByGoodsId(Integer goods_id);

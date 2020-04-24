@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+<!--    <script src="/js/layui/layui.js"></script>-->
+
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <table id="roleTable" lay-filter="test"></table>
+</div>
+<script type="text/html" id="xuhao">
+    <!--    序号-->
+    {{d.LAY_TABLE_INDEX+1}}
+</script>
+<script type="text/html" id="toolbarDemo">
+    <!--    头部按钮-->
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="addUser">添加</button>
+        <button class="layui-btn layui-btn-sm" lay-event="editUser">修改</button>
+        <button class="layui-btn layui-btn-sm" lay-event="deleteUser">删除</button>
+
+    </div>
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" data-id="{{d.id}}" lay-event="menuDistribute">菜单分配</a>
+</script>
+<script>
+    $(function () {
+        getRoleList(null,1,10);
+    })
+
+    function getRoleList(query,pageNum,pageRecord) {
+        layui.use('table', function () {
+            var table = layui.table;
+            //第一个实例
+            table.render({
+                id:"ID"
+                ,elem: '#roleTable'
+                , height: 312
+                ,toolbar: '#toolbarDemo'
+                ,defaultToolbar: [ { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                    title: '搜索'
+                    ,layEvent: 'LAYTABLE_TIPS'
+                    ,icon: 'layui-icon-tips'
+                }]
+                , url: '/role/findAllRole' //数据接口
+                , page: true //开启分页
+                , cols:[
+                    [ //表头
+                            {type: 'checkbox', fixed: 'left'}
+                            , { title: '编号', fixed: 'left', width: 60,templet: '#xuhao'}
+                            ,{fixed: 'right', title:'菜单分配', toolbar: '#barDemo', width:100}
+                            , {field: 'role_name', title: '角色名', width: 100}
+                            , {field: 'createtime', title: '创建时间', width: 200}
+                            , {field: 'mark', title: '备注', width: 200}
+                        ]
+                ]
+                ,where:{
+                    pageNum:pageNum,
+                    query:query,
+                    pageRecord:pageRecord
+                }
+                ,done: function(res, curr, count){
+                    if(res.code != 0){
+                        layer.msg(res.message);
+                    }
+                }
+            });
+
+            //行角色分配监听事件
+            table.on('tool(test)',function (obj) {
+                var roleId=$(this).attr("data-id")
+                layer.open({
+                    type: 2,
+                    title: ['分配菜单', 'font-size:18px;'],
+                    closeBtn: 1,
+                    shadeClose: true,
+                    area: ['500px', '90%'],
+                    skin: 'yourclass',
+                    content: ['/role/menuDistribute', 'no'],
+                    success: function (layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        body.contents().find("#id").val(roleId); // #detailId? 子页面元素id
+                    },
+
+                });
+
+
+            })
+
+        });
+    }
+</script>
+
+</body>
+</html>

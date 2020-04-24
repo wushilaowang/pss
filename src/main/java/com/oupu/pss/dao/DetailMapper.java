@@ -14,7 +14,7 @@ import java.util.List;
  * @Author:
  */
 public interface DetailMapper {
-    public List<DetailVO> findDetailByGoodsId(Integer goods_id,int pageNum,int pageRecord);
+    public List<DetailVO> findDetailByGoodsId(Integer goods_id, int pageNum, int pageRecord);
     public int addDeatil(Detail detail);
     public List<Detail> findDetails();
     public int countDetailsByGoodsId(int goods_id);

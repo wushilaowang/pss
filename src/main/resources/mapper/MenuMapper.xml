@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.oupu.pss.dao.MenuMapper">
+
+<!--    导航栏查询-->
+    <select id="findMenuToolbar" resultType="com.oupu.pss.entity.Menu">
+        select id,menu_name,url,parent_id from menu where is_toolbar = 1
+        and id in
+        <foreach collection="array" item="id" separator="," close=")" open="(">
+            #{id}
+        </foreach>
+        order by parent_id
+    </select>
+<!--    根据id查询菜单-->
+    <select id="findMenuById" resultType="com.oupu.pss.entity.Menu">
+        select menu_name,url,is_toolbar from menu where id = #{id}
+    </select>
+
+<!--查询所有菜单-->
+    <select id="findAllMenu" resultType="com.oupu.pss.entity.Menu">
+        select id,menu_name,parent_id,child_size,createtime from menu order by parent_id
+    </select>
+
+<!--    新增菜单-->
+    <insert id="addMenu">
+        insert into menu (menu_name,parent_id,child_size,url,is_toolbar,createtime) values
+            (#{menu_name}, #{parent_id}, #{child_size},#{url}, #{is_toolbar}, now())
+    </insert>
+
+<!--    编辑菜单-->
+    <update id="editMenu">
+        update menu set menu_name = #{menu_name}, url = #{url}, is_toolbar = #{is_toolbar} where id = #{id}
+    </update>
+
+<!--    删除菜单-->
+    <delete id="deleteMenu">
+        delete from menu where id = #{id}
+    </delete>
+
+<!--    父菜单子菜单数加减-->
+    <update id="addChildSize">
+        update menu set child_size = child_size + 1 where id = #{parent_id}
+    </update>
+
+    <update id="substractChildSize">
+        update menu set child_size = child_size - 1 where id = #{parent_id}
+    </update>
+
+<!--    获取parent_id-->
+    <select id="getParentIdById" resultType="java.lang.Integer">
+        select IFNULL(parent_id, 0) from menu where id = #{id}
+    </select>
+    
+<!--    获取权限-->
+    <select id="getPermission" resultType="string">
+        select menu_name from menu <where> <foreach collection="menuIds" item="menuId">
+            or id = #{menuId}
+    </foreach></where>
+    </select>
+</mapper>

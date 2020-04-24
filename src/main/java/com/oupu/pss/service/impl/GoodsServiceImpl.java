@@ -1,11 +1,14 @@
 package com.oupu.pss.service.impl;
 
+import com.oupu.pss.LogAop.LogAnnotation;
 import com.oupu.pss.dao.DetailMapper;
 import com.oupu.pss.entity.Detail;
 import com.oupu.pss.entity.Goods;
 import com.oupu.pss.dao.GoodsMapper;
 import com.oupu.pss.service.GoodsService;
 import com.oupu.pss.vo.GoodsVO;
+import org.apache.log4j.Logger;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,15 +35,20 @@ public class GoodsServiceImpl implements GoodsService {
         return goodsMapper.queryCountGoods(query);
     }
 
+    @RequiresPermissions("查询商品")
     @Override
     public List<Goods> findAll(Integer pageNum,Integer pageRecord,String query) {
         int count=goodsMapper.queryCountGoods(query);
         int pageCount=(count-1)/pageRecord+1;//总页数
         pageNum=(pageNum-1)*pageRecord;//页号
         List<Goods> list=goodsMapper.findAll(pageNum,pageRecord,query);
+        Logger logger = Logger.getLogger(GoodsServiceImpl.class);
+        logger.debug("查询商品");
+        logger.info("查询商品");
         return list;
     }
 
+    @LogAnnotation("增加库存")
     @Override
     @Transactional
     public int addStock(int num,int id,String descript,short option) {
@@ -56,6 +64,7 @@ public class GoodsServiceImpl implements GoodsService {
         return goodsMapper.addStock(num,id);
     }
 
+    @LogAnnotation("减少库存")
     @Override
     @Transactional
     public int subtractStock(int num, int id,String descript,short option) {

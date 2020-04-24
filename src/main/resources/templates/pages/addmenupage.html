@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/js/layui/css/layui.css">
+    <!--    <script src="/js/layui/layui.js"></script>-->
+    <script src="/js/layui/jquery-1.8.3.min.js"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div><input type="hidden" id="id"></div>
+    <div><input type="hidden" id="operate"></div>
+    <div><span>菜单名称:</span><input id="name" type="text"></div>
+    <div><span>是否导航栏:</span><input name="toolbar" type="radio" value="0">否
+        <input name="toolbar" type="radio" value="1">是</div>
+    <div>链接:<input name="url" type="text"></div>
+    <di><input class="layui-btn" type="button" value="提交"></di>
+
+
+</div>
+<!--<script src="//res.layui.com/layui/src/layui.js?t=1568076536616" charset="utf-8"></script>-->
+<script>
+    $(function () {
+        setTimeout("submit()", 1);
+
+    })
+
+    function submit() {
+        var a = $("#id").val();
+        if($("#operate").val() == "editMenu"){
+            var data = {id: $("#id").val()};
+            $.get("/menu/findMenuById",data,function (r) {
+                $("#name").val(r.data.menu_name);
+                $("input[name = 'toolbar'][value = "+r.data.is_toolbar+"]").attr("checked",true);
+                $("input[name = 'url']").val(r.data.url);
+            })
+        }
+        $(".layui-btn").on("click", function () {
+            if ($("#name").val().trim().replace(/\s/g, "") == "") {
+                alert("菜单名称不能为空")
+            } else {
+                var is_toolbar = $("input[name = 'toolbar']:checked").val();
+                var url = $("input[name = 'url']").val();
+                var parent_id = $("#id").val();
+                if ($("#operate").val() == "addLevelOne") {
+                    parent_id = 0;
+                }
+                var data = {
+                    menu_name: $("#name").val(),
+                    parent_id: parent_id,
+                    is_toolbar: is_toolbar,
+                    url: url
+                };
+                var path = "/menu/addMenu";
+                if($("#operate").val() == "editMenu"){
+                    path = "/menu/editMenu";
+                    data = {
+                        menu_name: $("#name").val(),
+                        id: parent_id,
+                        is_toolbar: is_toolbar,
+                        url: url
+                    }
+                }
+                $.ajax({
+                    url: path,
+                    type: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function (r) {
+                        if (r.state == "200") {
+                            alert(r.message)
+                        }
+                    }
+                });
+            }
+        })
+    }
+</script>
+
+</body>
+</html>
